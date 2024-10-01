@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Uploader</title>
+    <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
+        body {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+            background-color: #262626;
+        }
+        .form-container {
+            width: 100vw;
+            height: 100vh;
+            background-image: url('/static/upgrade-file-upload.png');
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .upload-files-container {
+            background-color: #f7fff7;
+            width: 420px;
+            padding: 30px 60px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            box-shadow: rgba(0, 0, 0, 0.24) 0px 10px 20px, rgba(0, 0, 0, 0.28) 0px 6px 6px;
+        }
+        .drag-file-area {
+            border: 2px dashed #7b2cbf;
+            border-radius: 40px;
+            margin: 10px 0 15px;
+            padding: 30px 50px;
+            width: 350px;
+            text-align: center;
+        }
+        .drag-file-area .upload-icon {
+            font-size: 50px;
+        }
+        .drag-file-area h3 {
+            font-size: 26px;
+            margin: 15px 0;
+        }
+        .drag-file-area label {
+            font-size: 19px;
+        }
+        .drag-file-area label .browse-files-text {
+            color: #7b2cbf;
+            font-weight: bolder;
+            cursor: pointer;
+        }
+        .browse-files span {
+            position: relative;
+            text-wrap: nowrap;
+            top: -25px;
+        }
+        .default-file-input {
+            opacity: 0;
+        }
+        .cannot-upload-message {
+            background-color: #ffc6c4;
+            font-size: 17px;
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            padding: 5px 10px 5px 30px;
+            border-radius: 5px;
+            color: #BB0000;
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            0% {opacity: 0;}
+            100% {opacity: 1;}
+        }
+        .cannot-upload-message span, .upload-button-icon {
+            padding-right: 10px;
+        }
+        .cannot-upload-message span:last-child {
+            padding-left: 20px;
+            cursor: pointer;
+        }
+        .file-block {
+            color: #f7fff7;
+            background-color: #7b2cbf;
+            transition: all 1s;
+            width: 390px;
+            position: relative;
+            display: none;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0 15px;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+        }
+        .file-info {
+            display: flex;
+            align-items: center;
+            font-size: 15px;
+        }
+        .file-icon {
+            margin-right: 10px;
+        }
+        .file-name, .file-size {
+            padding: 0 3px;
+        }
+        .remove-file-icon {
+            cursor: pointer;
+        }
+        .progress-bar {
+            display: flex;
+            position: absolute;
+            bottom: 0;
+            left: 4.5%;
+            width: 0;
+            height: 5px;
+            border-radius: 25px;
+            background-color: #4BB543;
+        }
+        .upload-button {
+            font-family: 'Montserrat';
+            background-color: #7b2cbf;
+            color: #f7fff7;
+            display: flex;
+            align-items: center;
+            font-size: 18px;
+            border: none;
+            border-radius: 20px;
+            margin: 10px;
+            padding: 7.5px 50px;
+            cursor: pointer;
+        }
+        .convert-button {
+            font-family: 'Montserrat';
+            background-color: #4BB543;
+            color: #f7fff7;
+            display: flex;
+            align-items: center;
+            font-size: 18px;
+            border: none;
+            border-radius: 20px;
+            margin: 10px;
+            padding: 7.5px 50px;
+            cursor: pointer;
+        }
+
+        .download-button {
+            display: none;
+            background-color: #a7289d9e;
+            color: white; 
+            padding: 12px 24px; 
+            font-size: 16px; 
+            border: none; 
+            border-radius: 67px;
+            cursor: pointer; 
+            transition: background-color 0.3s ease, transform 0.3s ease; 
+            margin-top: 10px;
+            position: relative; 
+            left: 12rem; 
+            top: -1rem; 
+        }
+    
+        .download-button:hover {
+            background-color: #262188de; 
+            transform: scale(1.05); 
+        }
+    
+        .download-button:active {
+            background-color: #1e7e34; 
+            transform: scale(0.98); 
+        }
+        
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            display: none;
+        }
+    
+        .loader::after {
+            content: "";
+            border: 17px solid #007bff;
+            border-radius: 50rem;
+            border-top: 6px solid #00000000;
+            width: 213px;
+            height: 225px;
+            animation: spin 451ms linear infinite;
+        }
+    
+        .text {
+            position: absolute;
+            top: 27rem;
+            font-size: 2rem;
+            font-family: fantasy;
+        }
+    
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* New Ring Loader CSS */
+        .ring-loader {
+            display: none;
+            position:absolute;
+            top:50%;
+            left:50%;
+            transform:translate(-50%,-50%);
+            width:250px;
+            height:250px;
+            background:transparent;
+            border:3px solid #3c3c3c;
+            border-radius:50%;
+            text-align:center;
+            line-height:150px;
+            font-family:sans-serif;
+            font-size:20px;
+            color:#fff000;
+            letter-spacing:4px;
+            text-transform:uppercase;
+            text-shadow:0 0 10px #fff000;
+            box-shadow:0 0 20px rgba(0,0,0,.5);
+        }
+
+        .ring-loader:before{
+            content:'';
+            position:absolute;
+            top:-3px;
+            left:-3px;
+            width:100%;
+            height:100%;
+            border:3px solid transparent;
+            border-top:3px solid #fff000;
+            border-right:3px solid #fff000;
+            border-radius:50%;
+            animation:animateC 2s linear infinite;
+        }
+
+        .ring-loader-span{
+            display:block;
+            position:absolute;
+            top:calc(50% - 2px);
+            left:50%;
+            width:50%;
+            height:4px;
+            background:transparent;
+            transform-origin:left;
+            animation:animate 2s linear infinite;
+        }
+
+        .ring-loader-span:before{
+            content:'';
+            position:absolute;
+            width:16px;
+            height:16px;
+            border-radius:50%;
+            background:#fff000;
+            top:-6px;
+            right:-8px;
+            box-shadow:0 0 20px #fff000;
+        }
+
+        .text_downloading{
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            font-family:sans-serif;
+            font-size: 19px;
+        }
+        @keyframes animateC{
+            0%
+            {
+                transform:rotate(0deg);
+            }
+            100%
+            {
+                transform:rotate(360deg);
+            }
+        }
+        
+        @keyframes animate{
+            0%
+            {
+                transform:rotate(45deg);
+            }
+            100%
+            {
+                transform:rotate(405deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="ring-loader" class="ring-loader">
+        <p class="text_downloading">Downloading</p>
+        <span class="ring-loader-span"></span>
+      </div>
+
+    <div id="loader" class="loader">
+        <p class="text">Loading</p>
+    </div>
+
+    <form class="form-container" enctype="multipart/form-data">
+        <div class="upload-files-container" id="upload-files-container">
+            <div class="drag-file-area">
+                <span class="material-icons-outlined upload-icon"> file_upload </span>
+                <h3 class="dynamic-message"> Drag & drop any file here </h3>
+                <label class="label"> or 
+                    <span class="browse-files"> 
+                        <input type="file" class="default-file-input" accept="mp4/*"/> 
+                        <span class="browse-files-text">browse file</span> <span>from device</span> 
+                    </span> 
+                </label>
+            </div>
+            <span class="cannot-upload-message"> 
+                <span class="material-icons-outlined">error</span> Please select a file first 
+                <span class="material-icons-outlined cancel-alert-button">cancel</span> 
+            </span>
+            <div class="file-block">
+                <div class="file-info"> 
+                    <span class="material-icons-outlined file-icon">description</span> 
+                    <span class="file-name"></span> | <span class="file-size"></span> 
+                </div>
+                <span class="material-icons remove-file-icon">delete</span>
+                <div class="progress-bar"></div>
+            </div>
+            <button type="button" class="upload-button">Upload</button>
+            <button type="button" class="convert-button">Convert</button>
+        </div>
+
+        <!-- Video Player and Download Button -->
+        <div id="video-container" style="display: none;">
+            <video id="video-player" width="600" height="400" style="height: 37rem; width: 37rem;">
+                Your browser does not support the video tag.
+            </video>
+            <br>
+            <button type="button" class="download-button">Download Video</button>
+        </div>
+    </form>
+
+    <script>
+
+        window.onload = () => {
+            // Reset the form on page load
+            document.querySelector(".upload-icon").innerHTML = 'file_upload';
+            document.querySelector(".dynamic-message").innerHTML = 'Drag & drop any file here';
+            document.querySelector(".default-file-input").value = '';
+            document.querySelector(".file-name").innerHTML = '';
+            document.querySelector(".file-size").innerHTML = '';
+            document.querySelector(".progress-bar").style.width = '0';
+            document.querySelector(".upload-button").innerHTML = 'Upload';
+            document.querySelector(".upload-files-container").style.display = 'flex';
+            document.querySelector("#video-container").style.display = 'none';
+            document.querySelector(".download-button").style.display = 'none';
+        };
+
+        var loader = document.getElementById("loader");
+        let draggableFileArea = document.querySelector(".drag-file-area");
+        let browseFileText = document.querySelector(".browse-files");
+        let uploadIcon = document.querySelector(".upload-icon");
+        let dragDropText = document.querySelector(".dynamic-message");
+        let fileInput = document.querySelector(".default-file-input");
+        let cannotUploadMessage = document.querySelector(".cannot-upload-message");
+        let cancelAlertButton = document.querySelector(".cancel-alert-button");
+        let uploadedFile = document.querySelector(".file-block");
+        let fileName = document.querySelector(".file-name");
+        let fileSize = document.querySelector(".file-size");
+        let progressBar = document.querySelector(".progress-bar");
+        let removeFileButton = document.querySelector(".remove-file-icon");
+        let uploadButton = document.querySelector(".upload-button");
+        let convertButton = document.querySelector(".convert-button");
+        let downloadButton = document.querySelector(".download-button");
+        let videoContainer = document.getElementById("video-container");
+        let videoPlayer = document.getElementById("video-player");
+        let uploadContainer = document.getElementById("upload-files-container");
+
+
+        let fileFlag = 0;
+
+        convertButton.addEventListener("click", (e) => {
+            loader.style.display = "flex";
+
+            if (fileInput.files.length > 0) {
+                let file = fileInput.files[0];
+                let formData = new FormData();
+                formData.append("video", file);
+
+                fetch("/convert", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.video_url) {
+    
+                        // Set the video source
+                        videoPlayer.src = data.video_url;
+                        loader.style.display = "none";
+                        videoPlayer.load();
+                        videoPlayer.style.display = "block";
+                
+                        videoPlayer.autoplay = true;
+                        videoPlayer.loop = true; 
+                        videoPlayer.play();
+
+                        // Hide the upload container and show video container
+                        loader.style.display = 'none';
+                        uploadContainer.style.display = "none";
+                        videoContainer.style.display = "block";
+
+                        // Show the download button
+                        downloadButton.style.display = "block";
+                        downloadButton.addEventListener("click", (e) => {
+                            const ringLoader = document.getElementById("ring-loader");
+                            const form = document.querySelector(".form-container");
+                            const originalBackgroundImage = form.style.backgroundImage; // Store the original background image
+
+                            // Show the ring loader with a black background
+                            ringLoader.style.display = "flex"; 
+                            form.style.backgroundImage = "none"; // Remove the background image
+                            videoContainer.style.display = "none"; // Hide the video container
+
+                            // Pause the video
+                            if (videoPlayer && typeof videoPlayer.pause === 'function') {
+                                videoPlayer.pause(); // Stop the video playback
+                                videoPlayer.currentTime = 0; // Optional: Reset the video to the beginning
+                            }
+
+                            // Hide the download button
+                            downloadButton.style.display = "none";
+
+                            let downloadFormData = new FormData();
+                            let videoFile = fileInput.files[0]; // Get the original uploaded file
+
+                            if (!videoFile) {
+                                console.error("No file selected for download.");
+                                loader.style.display = "none"; // Hide the loader if no file is selected
+                                return;
+                            }
+
+                            downloadFormData.append("video", videoFile);
+
+                            fetch("/download", {
+                                method: "POST",
+                                body: downloadFormData
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                ringLoader.style.display = "none"; // Hide the loader after the request completes
+                                
+                                if (data.video_url) {
+                                    const a = document.createElement('a');
+                                    a.href = data.video_url;
+                                    a.download = videoFile.name;
+                                    document.body.appendChild(a);
+                                    a.click();
+                                    document.body.removeChild(a);
+
+                                    // Reload the page after 5 seconds
+                                    setTimeout(() => {
+                                        window.location.reload();
+                                    }, 5000);
+                                } else {
+                                    console.error("Error:", data.error);
+                                }
+                            })
+                            .catch(error => {
+                                ringLoader.style.display = "none"; // Hide the loader on error
+                                console.error("Error during download:", error);
+                            });
+                        });
+                    } else {
+                        alert("Error processing video: " + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                });
+            } else {
+                cannotUploadMessage.style.display = "block";
+                loader.style.display = "none";
+            }
+        });
+
+        
+        var isAdvancedUpload = function() {
+            var div = document.createElement('div');
+            return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && 'FormData' in window && 'FileReader' in window;
+        }();
+    
+        function isVideoFile(file) {
+            return file && file.type.startsWith('video/');
+        }
+    
+        fileInput.addEventListener("click", () => {
+            fileInput.value = '';
+        });
+    
+        fileInput.addEventListener("change", e => {
+            if (fileInput.files.length > 0 && isVideoFile(fileInput.files[0])) {
+                uploadIcon.innerHTML = 'check_circle';
+                dragDropText.innerHTML = 'File Dropped Successfully!';
+                document.querySelector(".label").innerHTML = `drag & drop or <span class="browse-files"> <input type="file" class="default-file-input" accept="mp4/*" style=""/> <span class="browse-files-text" style="top: 0;"> browse file</span></span>`;
+                uploadButton.innerHTML = `Upload`;
+                fileName.innerHTML = fileInput.files[0].name;
+                fileSize.innerHTML = (fileInput.files[0].size / 1024).toFixed(1) + " KB";
+                uploadedFile.style.cssText = "display: flex;";
+                progressBar.style.width = 0;
+                fileFlag = 0;
+            } else {
+                cannotUploadMessage.style.cssText = "display: flex; animation: fadeIn linear 1.5s;";
+                dragDropText.innerHTML = 'Please select a valid video file';
+            }
+        });
+    
+        uploadButton.addEventListener("click", () => {
+            let isFileUploaded = fileInput.value;
+            if (isFileUploaded != '' && fileFlag == 0) {
+                fileFlag = 1;
+                var width = 0;
+                var id = setInterval(frame, 50);
+                function frame() {
+                    if (width >= 390) {
+                        clearInterval(id);
+                        uploadButton.innerHTML = `<span class="material-icons-outlined upload-button-icon"> check_circle </span> Uploaded`;
+                    } else {
+                        width += 5;
+                        progressBar.style.width = width + "px";
+                    }
+                }
+            } else {
+                cannotUploadMessage.style.cssText = "display: flex; animation: fadeIn linear 1.5s;";
+            }
+        });
+        
+        cancelAlertButton.addEventListener("click", () => {
+            cannotUploadMessage.style.cssText = "display: none;";
+        });
+    
+        if (isAdvancedUpload) {
+            ["drag", "dragstart", "dragend", "dragover", "dragenter", "dragleave", "drop"].forEach(evt => 
+                draggableFileArea.addEventListener(evt, e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                })
+            );
+    
+            ["dragover", "dragenter"].forEach(evt => {
+                draggableFileArea.addEventListener(evt, e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    uploadIcon.innerHTML = 'file_download';
+                    dragDropText.innerHTML = 'Drop your file here!';
+                });
+            });
+    
+            draggableFileArea.addEventListener("drop", e => {
+                let files = e.dataTransfer.files;
+                if (files.length > 0 && isVideoFile(files[0])) {
+                    uploadIcon.innerHTML = 'check_circle';
+                    dragDropText.innerHTML = 'File Dropped Successfully!';
+                    document.querySelector(".label").innerHTML = `drag & drop or <span class="browse-files"> <input type="file" class="default-file-input" accept="mp4/*" style=""/> <span class="browse-files-text" style="top: -23px; left: -20px;"> browse file</span> </span>`;
+                    uploadButton.innerHTML = `Upload`;
+    
+                    fileInput.files = files;
+                    fileName.innerHTML = files[0].name;
+                    fileSize.innerHTML = (files[0].size / 1024).toFixed(1) + " KB";
+                    uploadedFile.style.cssText = "display: flex;";
+                    progressBar.style.width = 0;
+                    fileFlag = 0;
+                } else {
+                    cannotUploadMessage.style.cssText = "display: flex; animation: fadeIn linear 1.5s;";
+                    dragDropText.innerHTML = 'Please drop a valid video file';
+                }
+            });
+        }
+    
+        removeFileButton.addEventListener("click", () => {
+            uploadedFile.style.cssText = "display: none;";
+            fileInput.value = '';
+            uploadIcon.innerHTML = 'file_upload';
+            dragDropText.innerHTML = 'Drag & drop any file here';
+            document.querySelector(".label").innerHTML = `or <span class="browse-files"> <input type="file" class="default-file-input" accept="mp4/*"/> <span class="browse-files-text">browse file</span> <span>from device</span> </span>`;
+            uploadButton.innerHTML = `Upload`;
+        });
+    </script>
+    
+</body>
+</html>

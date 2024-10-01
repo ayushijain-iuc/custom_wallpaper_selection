@@ -1,0 +1,182 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Background Changer</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+
+</head>
+<body>
+    <div class="main_content">
+        <div class="container">
+            <h2>Video Background Changer</h2>
+            <form id="upload-form" enctype="multipart/form-data" action="/download" method="POST">
+                <div class="form-group">
+                    <label for="video">Choose Video (MP4):</label>
+                    <input type="file" class="form-control" id="video" name="video" accept="video/mp4" required>
+                </div>
+                <div class="form-group">
+                    <label for="wallpaper">Choose Wallpaper (Image):</label>
+                    <input type="file" class="form-control" id="wallpaper" name="wallpaper" accept="image/*" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Upload and Convert</button>
+            </form>
+            <div id="response" class="mt-3"></div>
+        </div>
+    </div>
+
+<div class="main_img_sec mt-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-12">
+             <div class="img_slider_sel">
+                 <!-- owl carousel -->
+                 <div class="owl-carousel owl-theme">
+                     <div class="img_slider_item">
+                         <img src="static/background_images/green-gradient-plane-background.jpg" class="img-fluid"/>
+                     </div>
+                     <div class="img_slider_item">
+                         <img src="static/background_images/wallpaer3.jpg" class="img-fluid"/>
+                     </div>
+                     <div class="img_slider_item">
+                         <img src="static/background_images/wallpaper_image1.jpeg" class="img-fluid"/>
+                     </div>
+                     <div class="img_slider_item">
+                        <img src="static/background_images/wallpaper_image1.jpeg" class="img-fluid"/>
+                    </div>
+                    <div class="img_slider_item">
+                        <img src="static/background_images/wallpaper_image1.jpeg" class="img-fluid"/>
+                    </div>
+                    <div class="img_slider_item">
+                        <img src="static/background_images/wallpaper_image1.jpeg" class="img-fluid"/>
+                    </div>
+                    <div class="img_slider_item">
+                        <img src="static/background_images/wallpaper_image1.jpeg" class="img-fluid"/>
+                    </div>
+                 </div><!-- owl carousel-end -->
+             </div>
+            </div>
+        </div>
+     </div>
+</div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $("#upload-form").on("submit", function(e) {
+                e.preventDefault(); // Prevent default form submission
+
+                var formData = new FormData(this);
+
+                $.ajax({
+                    url: $(this).attr("action"),
+                    type: $(this).attr("method"),
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(response) {
+                        $("#response").html(`<div class="alert alert-success">${response.message}<br><a href="${response.video_url}" target="_blank">Download Processed Video</a></div>`);
+                    },
+                    error: function(jqXHR) {
+                        $("#response").html(`<div class="alert alert-danger">${jqXHR.responseJSON.error}</div>`);
+                    }
+                });
+            });
+
+            // Initialize Owl Carousel
+            $('.owl-carousel').owlCarousel({
+                loop: true,
+                margin: 50,
+                responsiveClass: true,
+                responsive: {
+                    0: {
+                        items: 2,
+                        nav: true
+                    },
+                    600: {
+                        items: 3,
+                        nav: false
+                    },
+                    1000: {
+                        items: 5,
+                        nav: true,
+                        loop: false
+                    }
+                }
+            });
+        });
+    </script>
+    <script>
+        convertButton.addEventListener("click", (e) => {
+    loader.style.display = "flex";
+
+    if (fileInput.files.length > 0) {
+        let file = fileInput.files[0];
+        let formData = new FormData();
+        formData.append("video", file);
+
+        fetch("/convert", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.video_url) {
+
+                // Set the video source with the converted video URL
+                videoPlayer.src = data.video_url;
+
+                loader.style.display = "none";  // Hide loader
+                videoPlayer.load();  // Load the new video
+                videoPlayer.style.display = "block";  // Show video player
+                
+                // Autoplay the video and enable loop
+                videoPlayer.autoplay = true;
+                videoPlayer.loop = true;
+                videoPlayer.play();
+
+                // Hide the upload section and show the video preview section
+                uploadContainer.style.display = "none";  // Hide the upload form
+                videoContainer.style.display = "block";  // Show the video player
+
+                // Show the download button if needed
+                downloadButton.style.display = "block";
+
+                // Add download functionality to the button
+                downloadButton.addEventListener("click", (e) => {
+                    const a = document.createElement('a');
+                    a.href = data.video_url;  // Use the video URL for download
+                    a.download = file.name;   // Set the original file name for download
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                });
+
+            } else {
+                alert("Error processing video: " + data.error);
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            loader.style.display = "none";
+        });
+    } else {
+        cannotUploadMessage.style.display = "block";
+        loader.style.display = "none";
+    }
+});
+
+    </script>
+</body>
+</html>
+

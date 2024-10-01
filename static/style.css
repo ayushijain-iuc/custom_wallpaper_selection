@@ -1,0 +1,46 @@
+.main_content{
+    width: 500px;
+    display: block;
+    margin: auto;
+    background: #fff;
+    margin-top: 100px;
+    box-shadow: 0px 4px 30px 20px #f3f3f3;
+    border-radius: 10px;
+    padding: 30px 15px;
+}
+
+.main_content .form-group .form-control {
+    height: 50px;
+    background: #f1f1f1;
+    border: unset;
+    padding-top: 10px;
+}
+
+.img_box_content{
+    width: 200px;
+    height: 200px;
+    background: #fff;
+    border: 1px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+.img_slider_sel img{
+    max-width: 100%;
+    height: 100px !important;
+}
+.owl-theme .owl-nav {
+    display: none;
+}
+
+.owl-theme .owl-dots, .owl-theme .owl-nav {
+    margin-top: 10px;
+}
+
+@media(max-width: 767px){
+    .main_content{
+        width: 100%;
+    }
+}
